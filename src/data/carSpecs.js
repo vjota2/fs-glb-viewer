@@ -3,73 +3,82 @@
 // ?debug=1 and clicking each part directly on the mesh. If the model is ever
 // swapped for a differently-proportioned one, redo that: load ?debug=1,
 // click the part you want a marker on, and copy the logged [x, y, z] here.
+//
+// This app is scoped to just the hybrid drivetrain — text content below is
+// still placeholder (not pulled from culsracing.cz) — swap in the real
+// write-ups whenever they're ready. Positions are real, given directly.
+//
+// HCU and Inverters sit only ~3.7cm apart in real life, so their marker
+// dots would overlap on screen and always resolve taps to whichever is on
+// top. `markerPosition` nudges just the dot's screen position apart
+// (vertically) while `position` — the camera fly-to target — stays exact.
 export const hotspots = [
   {
-    id: "aero",
-    doc: "PY2026-AERO-001",
-    label: "AERO",
-    title: "Aerodynamics",
-    position: [1.18, 0.87, 0.65],
+    id: "hsc",
+    doc: "PY2026-HSC-001",
+    label: "HSC",
+    title: "Hybrid Battery (HSC)",
+    position: [-0.04, 0.87, 0.01],
     summary:
-      "Full aero package (front wing, undertray and rear wing) tuned for downforce without blowing the drag budget.",
+      "Hybrid storage cell pack supplying the electric drive system, packaged low in the sidepod for a low centre of gravity.",
     specs: [
-      { k: "Downforce @ 60 km/h", v: "60 kg" },
+      { k: "Chemistry", v: "Lithium-ion" },
+      { k: "Nominal voltage", v: "~400 V" },
     ],
   },
   {
-    id: "frame",
-    doc: "PY2026-CHS-001",
-    label: "CHASSIS",
-    title: "Frame",
-    position: [-1.36, 1.66, 0.43],
-    summary:
-      "Spaceframe chassis welded from 25CrMo4 steel tube, built around driver safety and torsional stiffness targets.",
-    specs: [
-      { k: "Material", v: "25CrMo4 steel tube spaceframe" },
-      { k: "Overall L/W/H", v: "2834 / 1412 / 1211 mm" },
-      { k: "Weight w/ fluids (no driver)", v: "231 kg" },
-    ],
-  },
-  {
-    id: "edu",
-    doc: "PY2026-EDU-001",
-    label: "E-DRIVE",
-    title: "Electric Drive Unit",
-    position: [-0.1, 1.14, -0.56],
+    id: "hcu",
+    doc: "PY2026-HCU-001",
+    label: "HCU",
+    title: "Hybrid Control Unit (HCU)",
+    position: [0.54, 0.88, -0.02],
+    markerPosition: [0.54, 1.03, -0.02],
     partModel: "/models/parts/hyra-control-unit.glb",
     summary:
-      "Supplementary electric drive unit that hybridizes the combustion powertrain for extra low-end torque, run by the HYRA control unit.",
+      "HYRA hybrid control unit — governs power delivery between the combustion engine and the electric drive system, and manages battery charge/discharge.",
     specs: [
-      { k: "Max power", v: "20 kW" },
-      { k: "Max torque", v: "19.12 Nm" },
+      { k: "Function", v: "Hybrid power management" },
+      { k: "Interface", v: "CAN bus to ECU" },
     ],
   },
   {
-    id: "engine",
-    doc: "PY2026-ICE-001",
-    label: "ENGINE",
-    title: "Combustion Engine",
-    position: [-1.26, 1.63, -0.21],
+    id: "motors",
+    doc: "PY2026-MOT-001",
+    label: "MOTORS",
+    title: "Electric Motors",
+    position: [0.51, 1.05, 0.61],
     summary:
-      "Triumph Daytona-derived 709cc engine running a dry-sump lubrication system to keep oil pressure stable under high lateral G.",
+      "Electric motors supplying supplementary drive torque, adding low-end acceleration the combustion engine alone can't deliver.",
     specs: [
-      { k: "Displacement", v: "709 ccm, dry sump" },
-      { k: "Max power", v: "95.88 hp @ 11,500 rpm" },
-      { k: "Max torque", v: "65 Nm @ 8,000 rpm" },
-      { k: "Fuel", v: "Natural 98" },
+      { k: "Type", v: "Permanent magnet synchronous" },
+      { k: "Count", v: "1 per driven wheel" },
     ],
   },
   {
     id: "gearbox",
-    doc: "PY2026-TRN-001",
+    doc: "PY2026-MGR-001",
     label: "GEARBOX",
-    title: "Transmission",
-    position: [-0.91, 1.15, -0.02],
+    title: "Electric Gearbox",
+    position: [0.51, 1.05, -0.53],
     summary:
-      "Sequential gearbox shifted electrically via steering-wheel paddles, cutting shift time versus a manual linkage.",
+      "Single-stage reduction gearset stepping each motor's output down to wheel speed, matched to the hybrid system's torque curve.",
     specs: [
-      { k: "Type", v: "2-speed sequential" },
-      { k: "Shifting", v: "Electric, paddle-operated" },
+      { k: "Layout", v: "Single-stage reduction" },
+      { k: "Lubrication", v: "Sealed, grease-packed" },
+    ],
+  },
+  {
+    id: "inverters",
+    doc: "PY2026-INV-001",
+    label: "INVERTERS",
+    title: "Hybrid Inverters",
+    position: [0.57, 0.89, 0.0],
+    markerPosition: [0.57, 0.74, 0.0],
+    summary:
+      "Inverters driving the hybrid motors, converting the HCU's torque request into phase current at the motor windings.",
+    specs: [
+      { k: "Function", v: "Motor phase current control" },
+      { k: "Cooling", v: "Liquid-cooled" },
     ],
   },
 ];

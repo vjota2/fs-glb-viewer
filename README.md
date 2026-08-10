@@ -36,9 +36,12 @@ wireframe placeholder box so the rest of the app still works.
 
 ## 3. Place the hotspots on the real model
 
-The 5 hotspots in `src/data/carSpecs.js` (frame, engine, electric drive unit,
-gearbox, aero) currently have guessed `position: [x, y, z]` coordinates based
-on a generic car-shaped bounding box. Once your real GLB is loaded:
+The app is scoped to the hybrid drivetrain: the 5 hotspots in
+`src/data/carSpecs.js` are the hybrid battery (HSC), hybrid control unit
+(HCU), electric motors, motor gears, and hybrid ESC. Their `position: [x, y,
+z]` coordinates are calibrated against the real GLB, but their text content
+is still placeholder — swap in the real write-ups whenever they're ready. If
+you ever need to re-place a marker (new GLB, wrong spot, etc.):
 
 1. Open the app with `?debug=1` appended, e.g. `http://localhost:5173/?debug=1`
 2. Click directly on the part of the model you want a marker on
