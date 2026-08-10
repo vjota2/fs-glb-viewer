@@ -13,3 +13,10 @@ export const MODEL_PATH = "/models/monopost.glb";
 export const CAR_LENGTH = 2.834;
 export const CAR_WIDTH = 1.412;
 export const CAR_HEIGHT = 1.7;
+
+// Idle demo mode: after this many seconds with no interaction, any open
+// hotspot popup closes and the camera auto-rotates around the car until the
+// next tap/drag/scroll. Overridable at runtime from the in-app Settings
+// panel (persisted to localStorage from there on).
+export const DEFAULT_IDLE_ENABLED = true;
+export const DEFAULT_IDLE_SECONDS = 30;

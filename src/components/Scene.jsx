@@ -68,7 +68,7 @@ function CameraRig({ activeSpot, defaultFraming, controlsRef }) {
   return null;
 }
 
-export function Scene({ activeId, onSelect, debug, onDebugPick }) {
+export function Scene({ activeId, onSelect, debug, onDebugPick, autoRotate }) {
   const controlsRef = useRef();
   const [fit, setFit] = useState(FALLBACK_FIT);
   const activeSpot = useMemo(
@@ -158,6 +158,8 @@ export function Scene({ activeId, onSelect, debug, onDebugPick }) {
         maxDistance={CAR_LENGTH * 3}
         maxPolarAngle={Math.PI / 2 - 0.02}
         target={initialFraming.target.toArray()}
+        autoRotate={autoRotate && !activeSpot}
+        autoRotateSpeed={0.6}
       />
     </Canvas>
   );
