@@ -47,6 +47,7 @@ export const hotspots = [
     label: "MOTORS",
     title: "Electric Motors",
     position: [0.51, 1.05, 0.61],
+    partModel: "/models/parts/electric-motor.glb",
     summary:
       "Electric motors supplying supplementary drive torque, adding low-end acceleration the combustion engine alone can't deliver.",
     specs: [
