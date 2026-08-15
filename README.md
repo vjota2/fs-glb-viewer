@@ -38,15 +38,43 @@ wireframe placeholder box so the rest of the app still works.
 
 The app is scoped to the hybrid drivetrain: the 5 hotspots in
 `src/data/carSpecs.js` are the hybrid battery (HSC), hybrid control unit
-(HCU), electric motors, motor gears, and hybrid ESC. Their `position: [x, y,
-z]` coordinates are calibrated against the real GLB, but their text content
-is still placeholder — swap in the real write-ups whenever they're ready. If
-you ever need to re-place a marker (new GLB, wrong spot, etc.):
+(HCU), electric motors, electric gearbox, and hybrid inverters. Their
+`position: [x, y, z]` coordinates are calibrated against the real GLB, but
+their text content is still placeholder — swap in the real write-ups whenever
+they're ready. If you ever need to re-place a marker (new GLB, wrong spot,
+etc.):
 
 1. Open the app with `?debug=1` appended, e.g. `http://localhost:5173/?debug=1`
 2. Click directly on the part of the model you want a marker on
 3. The bottom-left readout logs the `[x, y, z]` coordinate you clicked
 4. Copy that into the matching hotspot's `position` in `src/data/carSpecs.js`
+
+Two optional fields fine-tune a marker without moving the part itself:
+
+- `markerPosition` moves only the clickable dot, leaving `position` as the
+  camera's fly-to target. Used where two parts sit too close together for
+  their dots to be tapped apart (the HCU and inverters are ~3.7cm apart).
+- `view` pins the camera framing used when that hotspot is opened, so the part
+  is seen from an angle that isn't blocked by bodywork. Without it the camera
+  flies in along one generic diagonal, which buries anything behind a wheel or
+  sidepod.
+
+## 3b. Re-author a hotspot's camera view
+
+`view: { position: [x, y, z], target: [x, y, z] }` is authored the same way:
+
+1. Open with `?debug=1` — the readout now also shows the live camera
+   `position`/`target`, formatted ready to paste
+2. Orbit/zoom until the part reads clearly, then copy that line into the
+   hotspot's `view`
+
+In debug builds the camera is also exposed as `window.__viewer`, so a
+candidate framing can be tried straight from the console without an edit and
+reload: `__viewer.set([x, y, z], [tx, ty, tz])`.
+
+Views are stored un-offset and centred on the part. At runtime the camera
+slides sideways to keep the part clear of the info panel, which covers the
+right edge whenever a hotspot is open — so don't bake that offset in by hand.
 
 ## 4. Edit hotspot content
 

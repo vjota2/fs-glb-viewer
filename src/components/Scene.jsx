@@ -1,4 +1,5 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { ContactShadows, Grid, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
@@ -31,25 +32,63 @@ function computeDefaultFraming(fit) {
 // OrbitControls. Runs as a one-shot animation rather than a continuous
 // lerp-toward-target every frame — otherwise it would fight the user's
 // manual orbit/zoom drag whenever no hotspot is selected.
+// Slides a framing sideways so the subject clears the info panel, which covers
+// the right edge for exactly as long as a hotspot is open. Without this the
+// part we just flew to ends up underneath the panel on narrower screens.
+function offsetPastPanel(position, target, size) {
+  const panelWidth =
+    document.querySelector(".info-panel")?.getBoundingClientRect().width ?? 0;
+  const covered = size.width ? Math.min(panelWidth / size.width, 0.85) : 0;
+  if (covered <= 0) return;
+
+  const distance = position.distanceTo(target);
+  const visibleWidth =
+    2 *
+    distance *
+    Math.tan(THREE.MathUtils.degToRad(FOV_DEG) / 2) *
+    (size.width / size.height);
+
+  const right = new THREE.Vector3()
+    .subVectors(target, position)
+    .normalize()
+    .cross(new THREE.Vector3(0, 1, 0))
+    .normalize();
+
+  const shift = (covered / 2) * visibleWidth;
+  position.addScaledVector(right, shift);
+  target.addScaledVector(right, shift);
+}
+
 function CameraRig({ activeSpot, defaultFraming, controlsRef }) {
-  const { camera } = useThree();
+  const { camera, size } = useThree();
   const target = useRef(defaultFraming.target.clone());
   const position = useRef(defaultFraming.position.clone());
   const animating = useRef(false);
 
   useEffect(() => {
     if (activeSpot) {
-      target.current.set(...activeSpot.position);
-      position.current
-        .copy(target.current)
-        .addScaledVector(VIEW_DIR, ZOOM_DISTANCE);
+      // A hotspot can pin its own framing (`view`) so the part is seen from an
+      // angle that isn't blocked by bodywork — the generic VIEW_DIR approach
+      // below flies in along one fixed diagonal, which buries anything sitting
+      // behind a wheel or sidepod. See carSpecs.js for how these are authored.
+      const view = activeSpot.view;
+      if (view) {
+        target.current.set(...(view.target ?? activeSpot.position));
+        position.current.set(...view.position);
+      } else {
+        target.current.set(...activeSpot.position);
+        position.current
+          .copy(target.current)
+          .addScaledVector(VIEW_DIR, ZOOM_DISTANCE);
+      }
+      offsetPastPanel(position.current, target.current, size);
     } else {
       target.current.copy(defaultFraming.target);
       position.current.copy(defaultFraming.position);
     }
     animating.current = true;
     if (controlsRef.current) controlsRef.current.enabled = false;
-  }, [activeSpot, defaultFraming, controlsRef]);
+  }, [activeSpot, defaultFraming, controlsRef, size]);
 
   useFrame((_, delta) => {
     if (!animating.current || !controlsRef.current) return;
@@ -68,7 +107,52 @@ function CameraRig({ activeSpot, defaultFraming, controlsRef }) {
   return null;
 }
 
-export function Scene({ activeId, onSelect, debug, onDebugPick, autoRotate }) {
+// Debug-only: reports the live camera position/target so a good framing can be
+// found by orbiting manually and then pasted into a hotspot's `view`.
+// Throttled — this drives React state, and per-frame updates would be wasteful.
+function CameraReadout({ controlsRef, onChange }) {
+  const { camera } = useThree();
+  const lastSent = useRef(0);
+
+  // Also park them on window so a candidate framing can be tried straight from
+  // the console — `__viewer.set([x,y,z], [tx,ty,tz])` — instead of edit/reload
+  // cycles. Debug builds only; nothing in the app reads this.
+  useEffect(() => {
+    window.__viewer = {
+      camera,
+      controls: controlsRef,
+      set(position, target) {
+        camera.position.set(...position);
+        if (target) controlsRef.current?.target.set(...target);
+        controlsRef.current?.update();
+      },
+    };
+    return () => delete window.__viewer;
+  }, [camera, controlsRef]);
+
+  useFrame(() => {
+    const now = performance.now();
+    if (now - lastSent.current < 250) return;
+    lastSent.current = now;
+
+    const round = (v) => Math.round(v * 100) / 100;
+    onChange({
+      position: camera.position.toArray().map(round),
+      target: controlsRef.current?.target.toArray().map(round) ?? null,
+    });
+  });
+
+  return null;
+}
+
+export function Scene({
+  activeId,
+  onSelect,
+  debug,
+  onDebugPick,
+  onDebugCamera,
+  autoRotate,
+}) {
   const controlsRef = useRef();
   const [fit, setFit] = useState(FALLBACK_FIT);
   const activeSpot = useMemo(
@@ -150,6 +234,9 @@ export function Scene({ activeId, onSelect, debug, onDebugPick, autoRotate }) {
         defaultFraming={defaultFraming}
         controlsRef={controlsRef}
       />
+      {debug && (
+        <CameraReadout controlsRef={controlsRef} onChange={onDebugCamera} />
+      )}
       <OrbitControls
         ref={controlsRef}
         makeDefault

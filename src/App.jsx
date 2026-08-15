@@ -24,6 +24,7 @@ function readStoredNumber(key, fallback) {
 export default function App() {
   const [activeId, setActiveId] = useState(null);
   const [lastPick, setLastPick] = useState(null);
+  const [camReadout, setCamReadout] = useState(null);
 
   const [idleEnabled, setIdleEnabled] = useState(() =>
     readStoredBool(IDLE_ENABLED_KEY, DEFAULT_IDLE_ENABLED)
@@ -86,6 +87,7 @@ export default function App() {
           onSelect={setActiveId}
           debug={debug}
           onDebugPick={setLastPick}
+          onDebugCamera={setCamReadout}
           autoRotate={idleEnabled && idle}
         />
       </div>
@@ -106,6 +108,12 @@ export default function App() {
           {lastPick && (
             <div>
               [{lastPick.x.toFixed(2)}, {lastPick.y.toFixed(2)}, {lastPick.z.toFixed(2)}]
+            </div>
+          )}
+          {camReadout && (
+            <div className="debug-cam">
+              view: {"{"} position: [{camReadout.position.join(", ")}], target: [
+              {camReadout.target?.join(", ")}] {"}"}
             </div>
           )}
         </div>

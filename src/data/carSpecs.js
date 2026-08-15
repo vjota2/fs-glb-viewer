@@ -19,6 +19,7 @@ export const hotspots = [
     label: "HSC",
     title: "Hybrid Battery (HSC)",
     position: [-0.04, 0.87, 0.01],
+    view: { position: [0.64, 2.15, 3.54], target: [-0.04, 0.95, 0.01] },
     summary:
       "Hybrid storage cell pack supplying the electric drive system, packaged low in the sidepod for a low centre of gravity.",
     specs: [
@@ -33,6 +34,7 @@ export const hotspots = [
     title: "Hybrid Control Unit (HCU)",
     position: [0.54, 0.88, -0.02],
     markerPosition: [0.54, 1.03, -0.02],
+    view: { position: [2.3, 1.98, 2.1], target: [0.54, 0.95, -0.02] },
     partModel: "/models/parts/hyra-control-unit.glb",
     summary:
       "HYRA hybrid control unit — governs power delivery between the combustion engine and the electric drive system, and manages battery charge/discharge.",
@@ -47,6 +49,7 @@ export const hotspots = [
     label: "MOTORS",
     title: "Electric Motors",
     position: [0.51, 1.05, 0.61],
+    view: { position: [1.55, 2.0, 3.03], target: [0.51, 1.05, 0.61] },
     partModel: "/models/parts/electric-motor.glb",
     summary:
       "Electric motors supplying supplementary drive torque, adding low-end acceleration the combustion engine alone can't deliver.",
@@ -61,6 +64,7 @@ export const hotspots = [
     label: "GEARBOX",
     title: "Electric Gearbox",
     position: [0.51, 1.05, -0.53],
+    view: { position: [1.55, 2.0, -2.95], target: [0.51, 1.05, -0.53] },
     summary:
       "Single-stage reduction gearset stepping each motor's output down to wheel speed, matched to the hybrid system's torque curve.",
     specs: [
@@ -75,6 +79,7 @@ export const hotspots = [
     title: "Hybrid Inverters",
     position: [0.57, 0.89, 0.0],
     markerPosition: [0.57, 0.74, 0.0],
+    view: { position: [2.33, 1.98, -2.12], target: [0.57, 0.95, 0.0] },
     summary:
       "Inverters driving the hybrid motors, converting the HCU's torque request into phase current at the motor windings.",
     specs: [

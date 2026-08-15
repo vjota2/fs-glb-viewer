@@ -468,3 +468,12 @@ button {
   max-width: 260px;
   pointer-events: none;
 }
+
+.debug-cam {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-dim);
+  line-height: 1.5;
+  word-break: break-all;
+}
