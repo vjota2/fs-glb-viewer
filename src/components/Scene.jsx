@@ -1,23 +1,25 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { ContactShadows, Grid, OrbitControls } from "@react-three/drei";
+import { ContactShadows, Grid, Html, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { ErrorBoundary } from "./ErrorBoundary.jsx";
 import { Model } from "./Model.jsx";
 import { MissingModel } from "./MissingModel.jsx";
 import { Hotspot } from "./Hotspot.jsx";
-import { hotspots } from "../data/carSpecs.js";
 import { computeFraming } from "../lib/fitModel.js";
-import { CAR_LENGTH, CAR_WIDTH, CAR_HEIGHT } from "../config.js";
 
 const FOV_DEG = 40;
 const VIEW_DIR = new THREE.Vector3(0.8, 0.35, 0.8).normalize();
 const ZOOM_DISTANCE = 1.0;
 
-// Config values are only the fallback used before the real GLB reports its
-// measured size (or if it fails to load) — see Model.jsx's onMeasured.
-const FALLBACK_FIT = { width: CAR_LENGTH, depth: CAR_WIDTH, height: CAR_HEIGHT };
+// The model's declared dimensions are only the fallback used before its GLB
+// reports a measured size (or if it fails to load) — see Model.jsx.
+const fallbackFit = (model) => ({
+  width: model.length,
+  depth: model.width,
+  height: model.height,
+});
 
 // Fits the whole model in view regardless of its actual proportions: frames
 // on its true bounding-sphere so a tall/narrow or short/wide GLB is still
@@ -25,6 +27,17 @@ const FALLBACK_FIT = { width: CAR_LENGTH, depth: CAR_WIDTH, height: CAR_HEIGHT }
 // dimensions.
 function computeDefaultFraming(fit) {
   return computeFraming(fit, { viewDir: VIEW_DIR, fovDeg: FOV_DEG, margin: 1.3 });
+}
+
+// Shown while a model's GLB is in flight. The boot LoadingScreen only covers
+// the very first load, so without this, switching models — the road car is
+// ~22MB — would sit on an empty grid with no feedback.
+function ModelLoading() {
+  return (
+    <Html center style={{ pointerEvents: "none" }}>
+      <div className="model-loading">LOADING MODEL...</div>
+    </Html>
+  );
 }
 
 // Flies the camera to a hotspot (or back to the default view) whenever
@@ -111,7 +124,7 @@ function CameraRig({ activeSpot, defaultFraming, controlsRef }) {
 // found by orbiting manually and then pasted into a hotspot's `view`.
 // Throttled — this drives React state, and per-frame updates would be wasteful.
 function CameraReadout({ controlsRef, onChange }) {
-  const { camera } = useThree();
+  const { camera, scene } = useThree();
   const lastSent = useRef(0);
 
   // Also park them on window so a candidate framing can be tried straight from
@@ -120,6 +133,7 @@ function CameraReadout({ controlsRef, onChange }) {
   useEffect(() => {
     window.__viewer = {
       camera,
+      scene,
       controls: controlsRef,
       set(position, target) {
         camera.position.set(...position);
@@ -128,7 +142,7 @@ function CameraReadout({ controlsRef, onChange }) {
       },
     };
     return () => delete window.__viewer;
-  }, [camera, controlsRef]);
+  }, [camera, scene, controlsRef]);
 
   useFrame(() => {
     const now = performance.now();
@@ -146,6 +160,7 @@ function CameraReadout({ controlsRef, onChange }) {
 }
 
 export function Scene({
+  model,
   activeId,
   onSelect,
   debug,
@@ -154,13 +169,24 @@ export function Scene({
   autoRotate,
 }) {
   const controlsRef = useRef();
-  const [fit, setFit] = useState(FALLBACK_FIT);
+  const [fit, setFit] = useState(() => fallbackFit(model));
+
+  // Fall back to the incoming model's own dimensions the moment it changes,
+  // so the camera reframes immediately rather than holding the outgoing
+  // model's measurements until the new GLB finishes loading.
+  useEffect(() => setFit(fallbackFit(model)), [model]);
+
   const activeSpot = useMemo(
-    () => hotspots.find((h) => h.id === activeId) ?? null,
-    [activeId]
+    () => model.hotspots.find((h) => h.id === activeId) ?? null,
+    [model, activeId]
   );
   const defaultFraming = useMemo(() => computeDefaultFraming(fit), [fit]);
-  const initialFraming = useMemo(() => computeDefaultFraming(FALLBACK_FIT), []);
+  const initialFraming = useMemo(
+    () => computeDefaultFraming(fallbackFit(model)),
+    // Only the first frame's camera prop — later changes go through the rig.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
   return (
     <Canvas
@@ -181,9 +207,11 @@ export function Scene({
       <directionalLight position={[0, 9, 0.5]} intensity={0.9} />
       <directionalLight position={[-2, 4, -6]} intensity={0.5} color="#f3ca60" />
 
-      <Suspense fallback={null}>
-        <ErrorBoundary fallback={<MissingModel />}>
+      <Suspense fallback={<ModelLoading />}>
+        <ErrorBoundary fallback={<MissingModel model={model} />} resetKey={model.id}>
           <Model
+            key={model.id}
+            model={model}
             onMeasured={setFit}
             onClick={(e) => {
               if (debug) {
@@ -212,15 +240,16 @@ export function Scene({
         infiniteGrid
       />
       <ContactShadows
+        key={model.id}
         position={[0, 0.002, 0]}
         opacity={0.55}
-        scale={CAR_LENGTH * 3}
+        scale={model.length * 3}
         blur={2.5}
-        far={CAR_HEIGHT}
+        far={model.height}
         frames={1}
       />
 
-      {hotspots.map((spot) => (
+      {model.hotspots.map((spot) => (
         <Hotspot
           key={spot.id}
           spot={spot}
@@ -242,7 +271,7 @@ export function Scene({
         makeDefault
         enablePan={false}
         minDistance={0.6}
-        maxDistance={CAR_LENGTH * 3}
+        maxDistance={model.length * 3}
         maxPolarAngle={Math.PI / 2 - 0.02}
         target={initialFraming.target.toArray()}
         autoRotate={autoRotate && !activeSpot}

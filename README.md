@@ -22,32 +22,50 @@ Opens a dev server (prints a `localhost` URL — open it on the tablet's
 browser, or use the `--host` network URL it also prints to load it from
 another device on the same Wi-Fi).
 
-## 2. Add the real model
+## 2. Add the real models
 
-Drop your GLB at:
+The viewer shows two cars, switched with the control under the HUD: the team's
+monopost, and the road car the same hybrid system drops into for a customer.
+Their GLBs live at:
 
 ```
 public/models/monopost.glb
+public/models/road-car.glb
 ```
 
-That's it — the app auto-loads it, centers it, and scales it to match
-`CAR_LENGTH` in `src/config.js`. Until that file exists, the viewer shows a
-wireframe placeholder box so the rest of the app still works.
+Both are registered in `src/data/models.js`, which is also where you add,
+remove or reorder models. Each entry carries its own path, real-world
+dimensions, hotspot set, and an optional `rotation` for GLBs that aren't
+authored nose-along-X. The app auto-loads each one, centers it, and scales it
+to the `length` you declare. Until a file exists, the viewer shows a wireframe
+placeholder box so the rest of the app still works.
+
+> **Known issue — road car wheels.** The current road-car GLB is a game-engine
+> export, and that engine positions wheels at runtime rather than baking them
+> into the mesh. Its wheels therefore sit ~0.6m too far outboard (the car fits
+> to 3.10m wide instead of ~1.85m). It reads fine side-on but shows from the
+> front or rear. To fix, move the 8 wheel meshes inboard onto the hubs in
+> Blender and re-export.
 
 ## 3. Place the hotspots on the real model
 
-The app is scoped to the hybrid drivetrain: the 5 hotspots in
-`src/data/carSpecs.js` are the hybrid battery (HSC), hybrid control unit
-(HCU), electric motors, electric gearbox, and hybrid inverters. Their
-`position: [x, y, z]` coordinates are calibrated against the real GLB, but
-their text content is still placeholder — swap in the real write-ups whenever
-they're ready. If you ever need to re-place a marker (new GLB, wrong spot,
-etc.):
+The app is scoped to the hybrid drivetrain: the 5 hotspots are the hybrid
+battery (HSC), hybrid control unit (HCU), electric motors, electric gearbox,
+and hybrid inverters. In `src/data/carSpecs.js` their *content* (title, specs,
+part model) is written once in `components`, then placed per model — so
+editing a spec updates it on both cars, while each car keeps its own
+coordinates. Text content is still placeholder; swap in the real write-ups
+whenever they're ready.
+
+The monopost's coordinates are calibrated; **the road car's are rough guesses
+and still need doing.** To place (or re-place) a marker:
 
 1. Open the app with `?debug=1` appended, e.g. `http://localhost:5173/?debug=1`
-2. Click directly on the part of the model you want a marker on
-3. The bottom-left readout logs the `[x, y, z]` coordinate you clicked
-4. Copy that into the matching hotspot's `position` in `src/data/carSpecs.js`
+2. Switch to the car you're placing markers on
+3. Click directly on the part of the model you want a marker on
+4. The bottom-left readout logs the `[x, y, z]` coordinate you clicked
+5. Copy that into the matching entry in that model's hotspot list in
+   `src/data/carSpecs.js` (`monopostHotspots` or `roadCarHotspots`)
 
 Two optional fields fine-tune a marker without moving the part itself:
 

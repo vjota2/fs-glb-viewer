@@ -4,14 +4,24 @@ import * as THREE from "three";
 // scales it so its longest horizontal side equals targetLength. Shared by
 // the main car Model and the smaller PartViewer so both auto-fit the same
 // way regardless of how the source GLB was authored/scaled.
-export function fitClone(scene, targetLength) {
+//
+// `rotation` is applied before measuring, so a model authored facing the
+// wrong way is measured (and scaled) in the orientation it'll actually be
+// shown in — the fit keys off the longest *horizontal* side.
+export function fitClone(scene, targetLength, { rotation } = {}) {
   const clone = scene.clone(true);
+
   clone.traverse((child) => {
     if (child.isMesh) {
       child.castShadow = true;
       child.receiveShadow = true;
     }
   });
+
+  if (rotation) {
+    clone.rotation.set(...rotation);
+    clone.updateMatrixWorld(true);
+  }
 
   const box = new THREE.Box3().setFromObject(clone);
   const size = new THREE.Vector3();

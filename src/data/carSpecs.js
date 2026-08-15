@@ -1,25 +1,20 @@
-// Hotspot content + 3D placement. `position` values are calibrated against
-// the real FS11_02 GLB (public/models/monopost.glb) by loading the app with
-// ?debug=1 and clicking each part directly on the mesh. If the model is ever
-// swapped for a differently-proportioned one, redo that: load ?debug=1,
-// click the part you want a marker on, and copy the logged [x, y, z] here.
+// Hotspot content + 3D placement, per model.
 //
-// This app is scoped to just the hybrid drivetrain — text content below is
-// still placeholder (not pulled from culsracing.cz) — swap in the real
-// write-ups whenever they're ready. Positions are real, given directly.
+// The 5 hybrid components are the same wherever they're shown, so their text
+// lives once in `components` below; only *where* they sit changes per model.
+// Text content is still placeholder (not pulled from culsracing.cz) — swap in
+// the real write-ups whenever they're ready.
 //
-// HCU and Inverters sit only ~3.7cm apart in real life, so their marker
-// dots would overlap on screen and always resolve taps to whichever is on
-// top. `markerPosition` nudges just the dot's screen position apart
-// (vertically) while `position` — the camera fly-to target — stays exact.
-export const hotspots = [
-  {
-    id: "hsc",
+// `position` values are calibrated against the real GLB by loading the app
+// with ?debug=1 and clicking the part directly on the mesh; `view` pins the
+// camera framing used when the hotspot opens. See the README for both
+// workflows — and redo them per model, since the two cars are shaped nothing
+// alike.
+const components = {
+  hsc: {
     doc: "PY2026-HSC-001",
     label: "HSC",
     title: "Hybrid Battery (HSC)",
-    position: [-0.04, 0.87, 0.01],
-    view: { position: [0.64, 2.15, 3.54], target: [-0.04, 0.95, 0.01] },
     summary:
       "Hybrid storage cell pack supplying the electric drive system, packaged low in the sidepod for a low centre of gravity.",
     specs: [
@@ -27,14 +22,10 @@ export const hotspots = [
       { k: "Nominal voltage", v: "~400 V" },
     ],
   },
-  {
-    id: "hcu",
+  hcu: {
     doc: "PY2026-HCU-001",
     label: "HCU",
     title: "Hybrid Control Unit (HCU)",
-    position: [0.54, 0.88, -0.02],
-    markerPosition: [0.54, 1.03, -0.02],
-    view: { position: [2.3, 1.98, 2.1], target: [0.54, 0.95, -0.02] },
     partModel: "/models/parts/hyra-control-unit.glb",
     summary:
       "HYRA hybrid control unit — governs power delivery between the combustion engine and the electric drive system, and manages battery charge/discharge.",
@@ -43,13 +34,10 @@ export const hotspots = [
       { k: "Interface", v: "CAN bus to ECU" },
     ],
   },
-  {
-    id: "motors",
+  motors: {
     doc: "PY2026-MOT-001",
     label: "MOTORS",
     title: "Electric Motors",
-    position: [0.51, 1.05, 0.61],
-    view: { position: [1.55, 2.0, 3.03], target: [0.51, 1.05, 0.61] },
     partModel: "/models/parts/electric-motor.glb",
     summary:
       "Electric motors supplying supplementary drive torque, adding low-end acceleration the combustion engine alone can't deliver.",
@@ -58,13 +46,10 @@ export const hotspots = [
       { k: "Count", v: "1 per driven wheel" },
     ],
   },
-  {
-    id: "gearbox",
+  gearbox: {
     doc: "PY2026-MGR-001",
     label: "GEARBOX",
     title: "Electric Gearbox",
-    position: [0.51, 1.05, -0.53],
-    view: { position: [1.55, 2.0, -2.95], target: [0.51, 1.05, -0.53] },
     summary:
       "Single-stage reduction gearset stepping each motor's output down to wheel speed, matched to the hybrid system's torque curve.",
     specs: [
@@ -72,14 +57,10 @@ export const hotspots = [
       { k: "Lubrication", v: "Sealed, grease-packed" },
     ],
   },
-  {
-    id: "inverters",
+  inverters: {
     doc: "PY2026-INV-001",
     label: "INVERTERS",
     title: "Hybrid Inverters",
-    position: [0.57, 0.89, 0.0],
-    markerPosition: [0.57, 0.74, 0.0],
-    view: { position: [2.33, 1.98, -2.12], target: [0.57, 0.95, 0.0] },
     summary:
       "Inverters driving the hybrid motors, converting the HCU's torque request into phase current at the motor windings.",
     specs: [
@@ -87,4 +68,45 @@ export const hotspots = [
       { k: "Cooling", v: "Liquid-cooled" },
     ],
   },
+};
+
+const place = (id, placement) => ({ id, ...components[id], ...placement });
+
+// HCU and inverters sit only ~3.7cm apart on the monopost, so their marker
+// dots would overlap on screen and always resolve taps to whichever is on
+// top. `markerPosition` nudges just the dot apart (vertically) while
+// `position` — the camera fly-to target — stays exact.
+export const monopostHotspots = [
+  place("hsc", {
+    position: [-0.04, 0.87, 0.01],
+    view: { position: [0.64, 2.15, 3.54], target: [-0.04, 0.95, 0.01] },
+  }),
+  place("hcu", {
+    position: [0.54, 0.88, -0.02],
+    markerPosition: [0.54, 1.03, -0.02],
+    view: { position: [2.3, 1.98, 2.1], target: [0.54, 0.95, -0.02] },
+  }),
+  place("motors", {
+    position: [0.51, 1.05, 0.61],
+    view: { position: [1.55, 2.0, 3.03], target: [0.51, 1.05, 0.61] },
+  }),
+  place("gearbox", {
+    position: [0.51, 1.05, -0.53],
+    view: { position: [1.55, 2.0, -2.95], target: [0.51, 1.05, -0.53] },
+  }),
+  place("inverters", {
+    position: [0.57, 0.89, 0.0],
+    markerPosition: [0.57, 0.74, 0.0],
+    view: { position: [2.33, 1.98, -2.12], target: [0.57, 0.95, 0.0] },
+  }),
+];
+
+// Placements on the road car — where the same system would sit in a customer
+// vehicle. Calibrate these against road-car.glb with ?debug=1.
+export const roadCarHotspots = [
+  place("hsc", { position: [0, 0.6, -1.2] }),
+  place("hcu", { position: [0, 0.8, 1.2] }),
+  place("motors", { position: [0.7, 0.4, 1.3] }),
+  place("gearbox", { position: [-0.7, 0.4, 1.3] }),
+  place("inverters", { position: [0, 0.9, 1.5] }),
 ];

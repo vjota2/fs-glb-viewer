@@ -4,7 +4,8 @@ import { HUD } from "./components/HUD.jsx";
 import { InfoPanel } from "./components/InfoPanel.jsx";
 import { LoadingScreen } from "./components/LoadingScreen.jsx";
 import { Settings } from "./components/Settings.jsx";
-import { hotspots } from "./data/carSpecs.js";
+import { ModelSwitcher } from "./components/ModelSwitcher.jsx";
+import { models, DEFAULT_MODEL_ID } from "./data/models.js";
 import { DEFAULT_IDLE_ENABLED, DEFAULT_IDLE_SECONDS } from "./config.js";
 
 const IDLE_ENABLED_KEY = "hb-idle-enabled";
@@ -22,9 +23,20 @@ function readStoredNumber(key, fallback) {
 }
 
 export default function App() {
+  const [activeModelId, setActiveModelId] = useState(DEFAULT_MODEL_ID);
   const [activeId, setActiveId] = useState(null);
   const [lastPick, setLastPick] = useState(null);
   const [camReadout, setCamReadout] = useState(null);
+
+  const model = models.find((m) => m.id === activeModelId) ?? models[0];
+
+  // Switching cars closes any open popup — the same component sits somewhere
+  // completely different on the other model, so keeping it open would leave
+  // the camera parked on a stale framing.
+  function selectModel(id) {
+    setActiveId(null);
+    setActiveModelId(id);
+  }
 
   const [idleEnabled, setIdleEnabled] = useState(() =>
     readStoredBool(IDLE_ENABLED_KEY, DEFAULT_IDLE_ENABLED)
@@ -77,12 +89,13 @@ export default function App() {
     []
   );
 
-  const activeSpot = hotspots.find((h) => h.id === activeId) ?? null;
+  const activeSpot = model.hotspots.find((h) => h.id === activeId) ?? null;
 
   return (
     <div className="app">
       <div className="canvas-wrap">
         <Scene
+          model={model}
           activeId={activeId}
           onSelect={setActiveId}
           debug={debug}
@@ -93,6 +106,7 @@ export default function App() {
       </div>
 
       <HUD />
+      <ModelSwitcher activeId={activeModelId} onSelect={selectModel} />
       <InfoPanel spot={activeSpot} onClose={() => setActiveId(null)} />
       <LoadingScreen />
       <Settings

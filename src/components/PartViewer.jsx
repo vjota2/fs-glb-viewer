@@ -62,7 +62,7 @@ export function PartViewer({ modelPath }) {
       <hemisphereLight args={["#eae6da", "#1a1a2e", 0.5]} />
 
       <Suspense fallback={null}>
-        <ErrorBoundary fallback={<PartUnavailable />}>
+        <ErrorBoundary fallback={<PartUnavailable />} resetKey={modelPath}>
           <PartModel modelPath={modelPath} onMeasured={setFit} />
         </ErrorBoundary>
       </Suspense>
