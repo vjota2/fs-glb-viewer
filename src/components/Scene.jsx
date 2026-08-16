@@ -30,8 +30,8 @@ function computeDefaultFraming(fit) {
 }
 
 // Shown while a model's GLB is in flight. The boot LoadingScreen only covers
-// the very first load, so without this, switching models — the road car is
-// ~22MB — would sit on an empty grid with no feedback.
+// the very first load, so without this, switching models — the rally car is
+// ~15MB — would sit on an empty grid with no feedback.
 function ModelLoading() {
   return (
     <Html center style={{ pointerEvents: "none" }}>

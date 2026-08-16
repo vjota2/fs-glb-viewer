@@ -25,12 +25,12 @@ another device on the same Wi-Fi).
 ## 2. Add the real models
 
 The viewer shows two cars, switched with the control under the HUD: the team's
-monopost, and the road car the same hybrid system drops into for a customer.
+monopost, and the rally car the same hybrid system drops into for a customer.
 Their GLBs live at:
 
 ```
 public/models/monopost.glb
-public/models/road-car.glb
+public/models/rally-car.glb
 ```
 
 Both are registered in `src/data/models.js`, which is also where you add,
@@ -40,12 +40,14 @@ authored nose-along-X. The app auto-loads each one, centers it, and scales it
 to the `length` you declare. Until a file exists, the viewer shows a wireframe
 placeholder box so the rest of the app still works.
 
-> **Known issue — road car wheels.** The current road-car GLB is a game-engine
-> export, and that engine positions wheels at runtime rather than baking them
-> into the mesh. Its wheels therefore sit ~0.6m too far outboard (the car fits
-> to 3.10m wide instead of ~1.85m). It reads fine side-on but shows from the
-> front or rear. To fix, move the 8 wheel meshes inboard onto the hubs in
-> Blender and re-export.
+The rally car ships as a 14.7MB GLB, down from the 74MB the source download
+weighs. Its textures were downscaled (2048 cap, 1024 for interior and data
+maps) and re-encoded to JPEG, keeping PNG only for the six that actually use
+alpha; both are core glTF, so no loader extension is involved. `gltf-transform
+prune` and `dedup` then dropped unused textures and accessors. If you re-do
+this, note that `weld` made the file *bigger* here, and that gltf-transform's
+own `resize`/`webp` commands fail on this machine's sharp build
+(`colourspace: parameter space not set`).
 
 ## 3. Place the hotspots on the real model
 
@@ -57,15 +59,18 @@ editing a spec updates it on both cars, while each car keeps its own
 coordinates. Text content is still placeholder; swap in the real write-ups
 whenever they're ready.
 
-The monopost's coordinates are calibrated; **the road car's are rough guesses
-and still need doing.** To place (or re-place) a marker:
+Both cars' coordinates are calibrated. On the rally car the placements are
+*illustrative* — showing where the system would sit in a customer vehicle
+(pack under the boot floor, HCU and inverters either side of the engine bay,
+motors at the front hub, gearbox aft of the engine) rather than measured off a
+real install. To place (or re-place) a marker:
 
 1. Open the app with `?debug=1` appended, e.g. `http://localhost:5173/?debug=1`
 2. Switch to the car you're placing markers on
 3. Click directly on the part of the model you want a marker on
 4. The bottom-left readout logs the `[x, y, z]` coordinate you clicked
 5. Copy that into the matching entry in that model's hotspot list in
-   `src/data/carSpecs.js` (`monopostHotspots` or `roadCarHotspots`)
+   `src/data/carSpecs.js` (`monopostHotspots` or `rallyCarHotspots`)
 
 Two optional fields fine-tune a marker without moving the part itself:
 
@@ -128,6 +133,20 @@ npm run build
 Outputs static files to `dist/` — copy that folder to your server (nginx,
 Apache, or anything that can serve static files). No server-side code
 required.
+
+## Credits
+
+The rally car model is third-party and its licence **requires attribution**.
+This repository is public, so keep this credit with any copy, fork or build:
+
+> This work is based on ["Cherrier Vivace Rally"](https://sketchfab.com/3d-models/cherrier-vivace-rally-e402357e03204789b56f8e2540847fce)
+> by [akyolefe319](https://sketchfab.com/akyolefe319), licensed under
+> [CC-BY-4.0](http://creativecommons.org/licenses/by/4.0/).
+
+CC-BY-4.0 permits commercial use; crediting the author is the one condition.
+The same details are kept alongside the model in `src/data/models.js` so they
+travel with the entry. The monopost and HYRA/motor part models are the team's
+own and carry no such requirement.
 
 ## Notes
 

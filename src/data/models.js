@@ -1,4 +1,4 @@
-import { monopostHotspots, roadCarHotspots } from "./carSpecs.js";
+import { monopostHotspots, rallyCarHotspots } from "./carSpecs.js";
 
 // The models the viewer can switch between. `length` is the real-world length
 // (metres) each GLB is scaled to fit — it also drives the grid, contact
@@ -17,26 +17,27 @@ export const models = [
     hotspots: monopostHotspots,
   },
   {
-    id: "roadcar",
-    label: "ROAD CAR",
+    id: "rallycar",
+    label: "RALLY CAR",
     caption: "CUSTOMER FIT",
-    path: "/models/road-car.glb",
-    length: 4.51,
-    width: 2.0,
-    height: 1.22,
-    // Already Y-up (the exporter baked the conversion into each mesh), so
-    // this only spins it to run nose-to-tail along X, matching the monopost.
-    // Verified by wheel spread: wheelbase 2.42 on X, track 1.60 on Z, all
-    // four wheels level.
+    path: "/models/rally-car.glb",
+    // Measured off the GLB's world bounding box, which is already in metres:
+    // 4.42 long on Z, 1.98 wide on X, 1.57 tall on Y.
+    length: 4.42,
+    width: 1.98,
+    height: 1.57,
+    // Y-up already (Sketchfab's two wrapper rotations cancel out); this only
+    // spins it to run nose-to-tail along X, matching the monopost.
     rotation: [0, Math.PI / 2, 0],
-    // KNOWN ISSUE: the wheels sit ~0.6m too far outboard, so the car fits to
-    // 3.10m wide instead of ~1.85m. This is a game-engine export — the engine
-    // positions wheels at runtime from its own hub dummies rather than baking
-    // them into the mesh, and those dummy nodes aren't part of the exported
-    // scene. It reads fine side-on (the offset is along the track axis) but
-    // shows from the front or rear. Fix is to move the 8 wheel meshes inboard
-    // onto the hubs in Blender and re-export.
-    hotspots: roadCarHotspots,
+    hotspots: rallyCarHotspots,
+    // CC-BY-4.0 requires the author be credited wherever this is shared, and
+    // this repo is public — keep this with the model, and see README credits.
+    credit: {
+      title: "Cherrier Vivace Rally",
+      author: "akyolefe319",
+      license: "CC-BY-4.0",
+      url: "https://sketchfab.com/3d-models/cherrier-vivace-rally-e402357e03204789b56f8e2540847fce",
+    },
   },
 ];
 

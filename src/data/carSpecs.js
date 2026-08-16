@@ -101,12 +101,36 @@ export const monopostHotspots = [
   }),
 ];
 
-// Placements on the road car — where the same system would sit in a customer
-// vehicle. Calibrate these against road-car.glb with ?debug=1.
-export const roadCarHotspots = [
-  place("hsc", { position: [0, 0.6, -1.2] }),
-  place("hcu", { position: [0, 0.8, 1.2] }),
-  place("motors", { position: [0.7, 0.4, 1.3] }),
-  place("gearbox", { position: [-0.7, 0.4, 1.3] }),
-  place("inverters", { position: [0, 0.9, 1.5] }),
+// Placements on the rally car — where the same system would sit in a customer
+// vehicle. Calibrated against rally-car.glb with ?debug=1; the car runs
+// nose-to-tail along +X (nose at +X) once models.js has rotated it.
+export const rallyCarHotspots = [
+  // Pack under the boot floor, behind the rear axle — the usual place to put
+  // this much mass in a hatchback without eating cabin space.
+  place("hsc", {
+    position: [-1.45, 0.55, 0],
+    view: { position: [-4.21, 2.24, 3.34], target: [-1.45, 0.7, 0] },
+  }),
+  // HCU and inverters share the engine bay either side of the i4, so they get
+  // opposite sides — and mirrored views — rather than the vertical nudge the
+  // monopost needed to keep their markers apart.
+  place("hcu", {
+    position: [1.55, 0.88, -0.35],
+    view: { position: [3.9, 2.2, -2.6], target: [1.55, 0.9, -0.35] },
+  }),
+  place("inverters", {
+    position: [1.55, 0.88, 0.35],
+    view: { position: [3.9, 2.2, 2.6], target: [1.55, 0.9, 0.35] },
+  }),
+  // At the front hub, matching the "1 per driven wheel" spec.
+  place("motors", {
+    position: [1.36, 0.42, 0.78],
+    view: { position: [2.6, 1.56, 3.98], target: [1.36, 0.5, 0.78] },
+  }),
+  // Transmission, just aft of the engine. Framed side-on down the sill rather
+  // than over the wheel, so it doesn't read as another shot of the hub.
+  place("gearbox", {
+    position: [0.95, 0.42, 0],
+    view: { position: [0.9, 1.35, 4.9], target: [0.95, 0.45, 0] },
+  }),
 ];
