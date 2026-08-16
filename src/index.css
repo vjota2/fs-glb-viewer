@@ -512,6 +512,37 @@ button {
   opacity: 0.4;
 }
 
+.settings-section {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--accent);
+  letter-spacing: 0.12em;
+}
+
+.perf-row {
+  padding: 5px 0;
+  border-top: none;
+}
+
+/* Digits are tabular so the numbers don't jitter sideways as they update. */
+.perf-value {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.perf-value.good {
+  color: var(--ok);
+}
+
+.perf-value.warn {
+  color: var(--accent);
+}
+
+.perf-value.bad {
+  color: #ff6b6b;
+}
+
 /* ---------- Debug readout ---------- */
 
 .debug-readout {

@@ -120,6 +120,62 @@ function CameraRig({ activeSpot, defaultFraming, controlsRef }) {
   return null;
 }
 
+// Samples renderer stats for the settings panel's performance readout. Only
+// mounted while that panel is open — the numbers drive React state, and
+// re-rendering the scene twice a second for a readout nobody is looking at
+// would cost more than it measures.
+//
+// A frame can involve several render passes (drei's ContactShadows renders to
+// its own target, for one), and each one resets the counters while autoReset
+// is on — read them afterwards and you get whichever small pass happened to go
+// last, not the scene. So take ownership of the reset: let the counts
+// accumulate across every pass in a frame, then clear them once per frame
+// here. useFrame runs before the draw, so each read covers the frame before.
+function PerfMonitor({ onSample }) {
+  const { gl } = useThree();
+  const frames = useRef(0);
+  const since = useRef(performance.now());
+  const latest = useRef(null);
+
+  useEffect(() => {
+    gl.info.autoReset = false;
+    return () => {
+      gl.info.autoReset = true;
+    };
+  }, [gl]);
+
+  useFrame(() => {
+    frames.current += 1;
+    latest.current = {
+      calls: gl.info.render.calls,
+      triangles: gl.info.render.triangles,
+    };
+    gl.info.reset();
+
+    const now = performance.now();
+    const elapsed = now - since.current;
+    if (elapsed < 500) return;
+
+    onSample({
+      fps: Math.round((frames.current * 1000) / elapsed),
+      frameMs: Math.round((elapsed / frames.current) * 10) / 10,
+      ...latest.current,
+      geometries: gl.info.memory.geometries,
+      textures: gl.info.memory.textures,
+      programs: gl.info.programs?.length ?? 0,
+      // Chrome-only; other browsers report nothing rather than a wrong number.
+      heapMb: performance.memory
+        ? Math.round(performance.memory.usedJSHeapSize / 1048576)
+        : null,
+    });
+
+    frames.current = 0;
+    since.current = now;
+  });
+
+  return null;
+}
+
 // Debug-only: reports the live camera position/target so a good framing can be
 // found by orbiting manually and then pasted into a hotspot's `view`.
 // Throttled — this drives React state, and per-frame updates would be wasteful.
@@ -166,6 +222,7 @@ export function Scene({
   debug,
   onDebugPick,
   onDebugCamera,
+  onPerfSample,
   autoRotate,
 }) {
   const controlsRef = useRef();
@@ -266,6 +323,7 @@ export function Scene({
       {debug && (
         <CameraReadout controlsRef={controlsRef} onChange={onDebugCamera} />
       )}
+      {onPerfSample && <PerfMonitor onSample={onPerfSample} />}
       <OrbitControls
         ref={controlsRef}
         makeDefault

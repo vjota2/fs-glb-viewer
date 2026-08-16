@@ -27,6 +27,10 @@ export default function App() {
   const [activeId, setActiveId] = useState(null);
   const [lastPick, setLastPick] = useState(null);
   const [camReadout, setCamReadout] = useState(null);
+  // Settings owns the panel's contents, but its open state lives here so the
+  // renderer stats are only sampled while the panel is actually on screen.
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [perf, setPerf] = useState(null);
 
   const model = models.find((m) => m.id === activeModelId) ?? models[0];
 
@@ -101,6 +105,7 @@ export default function App() {
           debug={debug}
           onDebugPick={setLastPick}
           onDebugCamera={setCamReadout}
+          onPerfSample={settingsOpen ? setPerf : null}
           autoRotate={idleEnabled && idle}
         />
       </div>
@@ -110,10 +115,13 @@ export default function App() {
       <InfoPanel spot={activeSpot} onClose={() => setActiveId(null)} />
       <LoadingScreen />
       <Settings
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
         idleEnabled={idleEnabled}
         idleSeconds={idleSeconds}
         onChangeIdleEnabled={setIdleEnabled}
         onChangeIdleSeconds={setIdleSeconds}
+        perf={perf}
       />
 
       {debug && (
