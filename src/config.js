@@ -1,6 +1,7 @@
-// Edit these to match your team / current car — used throughout the HUD.
+// Edit these to match your team — used throughout the HUD. The heading names
+// the app rather than a car, since the viewer now switches between several.
 export const TEAM_NAME = "CULS PRAGUE FORMULA RACING";
-export const CAR_NAME = "PYTHON";
+export const APP_NAME = "HYRA PREVIEW";
 export const SEASON = "2026";
 // The models themselves — paths, real-world dimensions and hotspots — live in
 // src/data/models.js.

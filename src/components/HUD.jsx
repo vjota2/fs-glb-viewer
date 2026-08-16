@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { TEAM_NAME, CAR_NAME, SEASON } from "../config.js";
+import { TEAM_NAME, APP_NAME, SEASON } from "../config.js";
 
 function useClock() {
   const [now, setNow] = useState(new Date());
@@ -18,7 +18,7 @@ export function HUD() {
       <div className="hud-top">
         <div className="hud-brand">
           <span className="team">{TEAM_NAME}</span>
-          <span className="car">{CAR_NAME}</span>
+          <span className="car">{APP_NAME}</span>
         </div>
         <div className="hud-status">
           <span>
