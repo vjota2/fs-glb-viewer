@@ -29,11 +29,21 @@ export const models = [
     // Y-up already (Sketchfab's two wrapper rotations cancel out); this only
     // spins it to run nose-to-tail along X, matching the monopost.
     rotation: [0, Math.PI / 2, 0],
-    // Repaints the bodywork in the team amber so the demo car reads as part of
-    // the same system as the monopost. `material` is the body paint material
-    // in the GLB — the 34 body panels share it, and nothing else uses it, so
-    // glass, tyres, engine and interior keep their own colours.
-    tint: { material: "vivace.skin.rally", color: "#fca503" },
+    // Fixups applied to this GLB's materials by name — see fitModel.js.
+    materials: [
+      // Bodywork in the team amber, so the demo car reads as part of the same
+      // system as the monopost. The 34 body panels share this material and
+      // nothing else uses it, so tyres, engine and interior keep their own.
+      { name: "vivace.skin.rally", color: "#fca503" },
+      // Every glass material ships as alphaMode OPAQUE, so the windows render
+      // as solid black panels. Exterior glass gets a dark tint; the interior
+      // layer sits behind it and needs to be sheerer or the two stack into
+      // something nearly opaque again.
+      { name: "vivace_glass", opacity: 0.32 },
+      { name: "vivace_glass_int", opacity: 0.18 },
+      // Named for what it should be, but shipped opaque like the rest.
+      { name: "glass_invisible", hide: true },
+    ],
     hotspots: rallyCarHotspots,
     // CC-BY-4.0 requires the author be credited wherever this is shared, and
     // this repo is public — keep this with the model, and see README credits.

@@ -13,9 +13,9 @@ export function Model({ model, onClick, onMeasured }) {
     () =>
       fitClone(scene, model.length, {
         rotation: model.rotation,
-        tint: model.tint,
+        materials: model.materials,
       }),
-    [scene, model.length, model.rotation, model.tint]
+    [scene, model.length, model.rotation, model.materials]
   );
 
   useEffect(() => {

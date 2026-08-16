@@ -1,21 +1,46 @@
 import * as THREE from "three";
 
-// Repaints the meshes using `tint.material` by multiplying the base colour
-// through the existing texture, so the paint changes while livery decals,
-// panel shading and dirt stay put. Object3D.clone() shares materials with the
-// cached GLTF, so the material is copied first — tinting in place would
-// repaint every other instance loaded from that file too.
-function applyTint(mesh, { material: name, color }) {
+// Per-material fixups applied to a model's meshes, matched by material name.
+// A GLB often can't be authored exactly as the viewer wants it — the demo car
+// ships every glass material as alphaMode OPAQUE, so its windows render solid,
+// and its paint is white — and re-exporting someone else's model for each
+// tweak isn't practical. Declaring the overrides alongside the model keeps
+// those corrections visible instead of buried in an edited binary.
+//
+// `color` multiplies through the existing texture, so paint changes while
+// livery decals and panel shading survive. `opacity` makes a material
+// see-through; `hide` drops the mesh entirely.
+//
+// Object3D.clone() shares materials with the cached GLTF, so a matched
+// material is copied before being changed — editing in place would alter
+// every other instance loaded from that file, the other cars included.
+function applyMaterialOverrides(mesh, overrides) {
   const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+  const matched = (material) =>
+    material && overrides.find((o) => o.name === material.name);
 
-  const repainted = materials.map((material) => {
-    if (!material || material.name !== name) return material;
+  if (materials.every((m) => matched(m)?.hide)) {
+    mesh.visible = false;
+    return;
+  }
+
+  const patched = materials.map((material) => {
+    const override = matched(material);
+    if (!override) return material;
+
     const copy = material.clone();
-    copy.color = new THREE.Color(color);
+    if (override.color !== undefined) copy.color = new THREE.Color(override.color);
+    if (override.opacity !== undefined) {
+      copy.transparent = true;
+      copy.opacity = override.opacity;
+      // Transparent surfaces that write depth occlude the ones behind them —
+      // without this the far window blanks out the near one as the car turns.
+      copy.depthWrite = false;
+    }
     return copy;
   });
 
-  mesh.material = Array.isArray(mesh.material) ? repainted : repainted[0];
+  mesh.material = Array.isArray(mesh.material) ? patched : patched[0];
 }
 
 // Clones a loaded GLTF scene, centers it at the origin resting on y = 0, and
@@ -26,14 +51,14 @@ function applyTint(mesh, { material: name, color }) {
 // `rotation` is applied before measuring, so a model authored facing the
 // wrong way is measured (and scaled) in the orientation it'll actually be
 // shown in — the fit keys off the longest *horizontal* side.
-export function fitClone(scene, targetLength, { rotation, tint } = {}) {
+export function fitClone(scene, targetLength, { rotation, materials } = {}) {
   const clone = scene.clone(true);
 
   clone.traverse((child) => {
     if (child.isMesh) {
       child.castShadow = true;
       child.receiveShadow = true;
-      if (tint) applyTint(child, tint);
+      if (materials?.length) applyMaterialOverrides(child, materials);
     }
   });
 
