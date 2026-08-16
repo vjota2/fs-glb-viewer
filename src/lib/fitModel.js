@@ -1,5 +1,23 @@
 import * as THREE from "three";
 
+// Repaints the meshes using `tint.material` by multiplying the base colour
+// through the existing texture, so the paint changes while livery decals,
+// panel shading and dirt stay put. Object3D.clone() shares materials with the
+// cached GLTF, so the material is copied first — tinting in place would
+// repaint every other instance loaded from that file too.
+function applyTint(mesh, { material: name, color }) {
+  const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+
+  const repainted = materials.map((material) => {
+    if (!material || material.name !== name) return material;
+    const copy = material.clone();
+    copy.color = new THREE.Color(color);
+    return copy;
+  });
+
+  mesh.material = Array.isArray(mesh.material) ? repainted : repainted[0];
+}
+
 // Clones a loaded GLTF scene, centers it at the origin resting on y = 0, and
 // scales it so its longest horizontal side equals targetLength. Shared by
 // the main car Model and the smaller PartViewer so both auto-fit the same
@@ -8,13 +26,14 @@ import * as THREE from "three";
 // `rotation` is applied before measuring, so a model authored facing the
 // wrong way is measured (and scaled) in the orientation it'll actually be
 // shown in — the fit keys off the longest *horizontal* side.
-export function fitClone(scene, targetLength, { rotation } = {}) {
+export function fitClone(scene, targetLength, { rotation, tint } = {}) {
   const clone = scene.clone(true);
 
   clone.traverse((child) => {
     if (child.isMesh) {
       child.castShadow = true;
       child.receiveShadow = true;
+      if (tint) applyTint(child, tint);
     }
   });
 

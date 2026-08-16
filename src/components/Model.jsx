@@ -10,8 +10,12 @@ import { fitClone } from "../lib/fitModel.js";
 export function Model({ model, onClick, onMeasured }) {
   const { scene } = useGLTF(model.path);
   const { clone, fitted } = useMemo(
-    () => fitClone(scene, model.length, { rotation: model.rotation }),
-    [scene, model.length, model.rotation]
+    () =>
+      fitClone(scene, model.length, {
+        rotation: model.rotation,
+        tint: model.tint,
+      }),
+    [scene, model.length, model.rotation, model.tint]
   );
 
   useEffect(() => {

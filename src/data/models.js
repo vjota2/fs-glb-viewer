@@ -18,8 +18,8 @@ export const models = [
   },
   {
     id: "rallycar",
-    label: "RALLY CAR",
-    caption: "CUSTOMER FIT",
+    label: "DEMO CAR",
+    caption: "HYRA RETROFIT",
     path: "/models/rally-car.glb",
     // Measured off the GLB's world bounding box, which is already in metres:
     // 4.42 long on Z, 1.98 wide on X, 1.57 tall on Y.
@@ -29,6 +29,11 @@ export const models = [
     // Y-up already (Sketchfab's two wrapper rotations cancel out); this only
     // spins it to run nose-to-tail along X, matching the monopost.
     rotation: [0, Math.PI / 2, 0],
+    // Repaints the bodywork in the team amber so the demo car reads as part of
+    // the same system as the monopost. `material` is the body paint material
+    // in the GLB — the 34 body panels share it, and nothing else uses it, so
+    // glass, tyres, engine and interior keep their own colours.
+    tint: { material: "vivace.skin.rally", color: "#fca503" },
     hotspots: rallyCarHotspots,
     // CC-BY-4.0 requires the author be credited wherever this is shared, and
     // this repo is public — keep this with the model, and see README credits.
