@@ -149,34 +149,36 @@ function StudioLights() {
       <Environment resolution={256} frames={1}>
         {/* Neutral studio box: broad soft source overhead, panels on all four
             sides so nothing is left unlit. */}
+        {/* Panel brightnesses are kept close together on purpose. A single very
+            bright ceiling lights the car nicely but is also what the bodywork
+            *reflects*, and on anything semi-gloss that reflection blows out
+            into a white smear — the wet-paint look. Flattening the contrast
+            between panels removes the hotspot while keeping the wrap, and the
+            shaping directionals below put the form back. */}
         <Lightformer
-          intensity={4}
+          intensity={1.6}
           form="rect"
           position={[0, 6, 0]}
           rotation-x={Math.PI / 2}
           scale={[12, 12, 1]}
         />
-        {/* Wall panels are deliberately dimmer than the ceiling. Matching them
-            lights every side but flattens the car — the blacks lift to grey
-            and the livery loses its snap. Keeping the key overhead preserves
-            falloff down the bodywork while still leaving no side unlit. */}
-        <Lightformer intensity={0.7} form="rect" position={[0, 1.5, 7]} scale={[12, 5, 1]} />
+        <Lightformer intensity={1.1} form="rect" position={[0, 1.5, 7]} scale={[12, 5, 1]} />
         <Lightformer
-          intensity={0.7}
+          intensity={1.1}
           form="rect"
           position={[0, 1.5, -7]}
           rotation-y={Math.PI}
           scale={[12, 5, 1]}
         />
         <Lightformer
-          intensity={0.55}
+          intensity={1.0}
           form="rect"
           position={[7, 1.5, 0]}
           rotation-y={-Math.PI / 2}
           scale={[12, 5, 1]}
         />
         <Lightformer
-          intensity={0.55}
+          intensity={1.0}
           form="rect"
           position={[-7, 1.5, 0]}
           rotation-y={Math.PI / 2}
@@ -185,9 +187,9 @@ function StudioLights() {
       </Environment>
 
       {/* Shaping only — the environment above carries the base exposure. */}
-      <directionalLight position={[3, 6, 4]} intensity={0.5} />
-      <directionalLight position={[-4, 3, -2]} intensity={0.3} />
-      <directionalLight position={[-2, 4, -6]} intensity={0.25} color="#f3ca60" />
+      <directionalLight position={[3, 6, 4]} intensity={0.8} />
+      <directionalLight position={[-4, 3, -2]} intensity={0.45} />
+      <directionalLight position={[-2, 4, -6]} intensity={0.3} color="#f3ca60" />
     </>
   );
 }
@@ -321,6 +323,12 @@ export function Scene({
     <Canvas
       shadows
       camera={{ position: initialFraming.position.toArray(), fov: FOV_DEG }}
+      // Khronos PBR Neutral, matching the tone curve the team site's
+      // <model-viewer> uses. R3F otherwise defaults to ACES Filmic, which
+      // rolls bright values toward white — that white-clipping is what turned
+      // specular highlights into the blown-out "wet paint" smears, and no
+      // amount of light or roughness tuning fixes a tone curve.
+      gl={{ toneMapping: THREE.NeutralToneMapping, toneMappingExposure: 1 }}
       onPointerMissed={() => onSelect(null)}
     >
       <color attach="background" args={["#0d0d16"]} />

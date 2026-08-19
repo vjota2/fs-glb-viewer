@@ -48,6 +48,30 @@ function applyMaterialOverrides(mesh, overrides) {
   mesh.material = Array.isArray(mesh.material) ? patched : patched[0];
 }
 
+// Raises any material smoother than `floor` up to it.
+//
+// Several materials on both cars ship at roughness 0.25–0.35. Under the old
+// directional rig that only produced small highlights, but an IBL environment
+// is reflected in full, so those surfaces mirror the bright panels and the
+// bodywork reads as polished glass rather than paint. Blurring the reflection
+// is the fix that keeps the even lighting: dimming the environment instead
+// would take the diffuse fill down with it, undoing the point of the IBL.
+//
+// Clones before writing, for the same reason as the overrides above.
+function clampRoughness(mesh, floor) {
+  const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+
+  const patched = materials.map((material) => {
+    if (!material || material.roughness === undefined) return material;
+    if (material.roughness >= floor) return material;
+    const copy = material.clone();
+    copy.roughness = floor;
+    return copy;
+  });
+
+  mesh.material = Array.isArray(mesh.material) ? patched : patched[0];
+}
+
 // Clones a loaded GLTF scene, centers it at the origin resting on y = 0, and
 // scales it so its longest horizontal side equals targetLength. Shared by
 // the main car Model and the smaller PartViewer so both auto-fit the same
@@ -56,7 +80,7 @@ function applyMaterialOverrides(mesh, overrides) {
 // `rotation` is applied before measuring, so a model authored facing the
 // wrong way is measured (and scaled) in the orientation it'll actually be
 // shown in — the fit keys off the longest *horizontal* side.
-export function fitClone(scene, targetLength, { rotation, materials } = {}) {
+export function fitClone(scene, targetLength, { rotation, materials, minRoughness } = {}) {
   const clone = scene.clone(true);
 
   clone.traverse((child) => {
@@ -64,6 +88,7 @@ export function fitClone(scene, targetLength, { rotation, materials } = {}) {
       child.castShadow = true;
       child.receiveShadow = true;
       if (materials?.length) applyMaterialOverrides(child, materials);
+      if (minRoughness !== undefined) clampRoughness(child, minRoughness);
     }
   });
 
