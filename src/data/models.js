@@ -36,11 +36,14 @@ export const models = [
       // nothing else uses it, so tyres, engine and interior keep their own.
       { name: "vivace.skin.rally", color: "#fca503" },
       // Every glass material ships as alphaMode OPAQUE, so the windows render
-      // as solid black panels. Exterior glass gets a dark tint; the interior
-      // layer sits behind it and needs to be sheerer or the two stack into
-      // something nearly opaque again.
-      { name: "vivace_glass", opacity: 0.32 },
-      { name: "vivace_glass_int", opacity: 0.18 },
+      // as solid black panels. Transparency alone still leaves them looking
+      // heavily smoked, because the baked textures are near-black (mean RGB
+      // 17,27,27 and 30,72,68) — hence `untextured`, so the glass takes a
+      // faint cool tint instead of the dark image. The interior layer sits
+      // behind the exterior one, so it has to be sheerer or the two stack back
+      // up into something murky.
+      { name: "vivace_glass", untextured: true, color: "#dfeaea", opacity: 0.16 },
+      { name: "vivace_glass_int", untextured: true, color: "#dfeaea", opacity: 0.08 },
       // Named for what it should be, but shipped opaque like the rest.
       { name: "glass_invisible", hide: true },
     ],

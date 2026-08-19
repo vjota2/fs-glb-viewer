@@ -9,7 +9,11 @@ import * as THREE from "three";
 //
 // `color` multiplies through the existing texture, so paint changes while
 // livery decals and panel shading survive. `opacity` makes a material
-// see-through; `hide` drops the mesh entirely.
+// see-through; `hide` drops the mesh entirely. `untextured` discards the base
+// colour map — needed when the baked texture is the problem rather than the
+// tint over it: the demo car's glass ships as a near-black image, so no amount
+// of `color` (which multiplies) or `opacity` clears it, and it always reads as
+// heavy smoke.
 //
 // Object3D.clone() shares materials with the cached GLTF, so a matched
 // material is copied before being changed — editing in place would alter
@@ -29,6 +33,7 @@ function applyMaterialOverrides(mesh, overrides) {
     if (!override) return material;
 
     const copy = material.clone();
+    if (override.untextured) copy.map = null;
     if (override.color !== undefined) copy.color = new THREE.Color(override.color);
     if (override.opacity !== undefined) {
       copy.transparent = true;
