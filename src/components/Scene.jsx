@@ -1,14 +1,8 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import {
-  ContactShadows,
-  Environment,
-  Grid,
-  Html,
-  Lightformer,
-  OrbitControls,
-} from "@react-three/drei";
+import { ContactShadows, Grid, Html, OrbitControls } from "@react-three/drei";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import * as THREE from "three";
 import { ErrorBoundary } from "./ErrorBoundary.jsx";
 import { Model } from "./Model.jsx";
@@ -129,64 +123,46 @@ function CameraRig({ activeSpot, defaultFraming, controlsRef }) {
 
 // Lighting matched to the team site's own car viewer, which renders through
 // <model-viewer environment-image="neutral"> — image-based lighting, not a set
-// of lamps. That distinction is the whole reason a directional rig couldn't
-// reproduce it: an IBL environment lights every surface from every direction
-// at once, so a car reads evenly wherever you orbit, while stacking
-// directionals always leaves a lit side and a falling-away side.
+// of lamps. That distinction is why a directional rig could never reproduce it:
+// an IBL environment lights every surface from every direction at once, so a
+// car reads evenly wherever you orbit, while stacking directionals always
+// leaves a lit side and a falling-away side.
 //
-// The environment is built here out of emissive panels rather than loaded from
-// an HDRI, so there's no CDN fetch — the kiosk keeps working on a dead venue
-// network, and there's no multi-megabyte texture in the first paint. `frames={1}`
-// bakes it once instead of re-rendering the cube map every frame.
+// This uses three's RoomEnvironment, which is a port of model-viewer's own
+// EnvironmentScene — the same procedural room behind `environment-image=
+// "neutral"`, so the match is by construction rather than by eye. It ships
+// with three, so there's no CDN fetch: the kiosk still works on a dead venue
+// network and nothing multi-megabyte lands in the first paint.
 //
-// The directionals that remain only shape highlights on top of that base. One
+// Baked once into a PMREM cube map on mount rather than re-rendered per frame.
+// The directionals that remain only shape highlights on top of it. One
 // environment serves both cars: an earlier attempt tuned lamps per model to
 // stop the black livery going flat, but that was compensating for the wrong
 // thing — with IBL doing the work, neither car needs its own rig.
 function StudioLights() {
+  const { gl, scene } = useThree();
+
+  useEffect(() => {
+    const pmrem = new THREE.PMREMGenerator(gl);
+    const room = new RoomEnvironment();
+    const target = pmrem.fromScene(room, 0.04);
+
+    scene.environment = target.texture;
+
+    return () => {
+      scene.environment = null;
+      target.dispose();
+      pmrem.dispose();
+      room.traverse((o) => {
+        o.geometry?.dispose();
+        o.material?.dispose();
+      });
+    };
+  }, [gl, scene]);
+
   return (
     <>
-      <Environment resolution={256} frames={1}>
-        {/* Neutral studio box: broad soft source overhead, panels on all four
-            sides so nothing is left unlit. */}
-        {/* Panel brightnesses are kept close together on purpose. A single very
-            bright ceiling lights the car nicely but is also what the bodywork
-            *reflects*, and on anything semi-gloss that reflection blows out
-            into a white smear — the wet-paint look. Flattening the contrast
-            between panels removes the hotspot while keeping the wrap, and the
-            shaping directionals below put the form back. */}
-        <Lightformer
-          intensity={1.6}
-          form="rect"
-          position={[0, 6, 0]}
-          rotation-x={Math.PI / 2}
-          scale={[12, 12, 1]}
-        />
-        <Lightformer intensity={1.1} form="rect" position={[0, 1.5, 7]} scale={[12, 5, 1]} />
-        <Lightformer
-          intensity={1.1}
-          form="rect"
-          position={[0, 1.5, -7]}
-          rotation-y={Math.PI}
-          scale={[12, 5, 1]}
-        />
-        <Lightformer
-          intensity={1.0}
-          form="rect"
-          position={[7, 1.5, 0]}
-          rotation-y={-Math.PI / 2}
-          scale={[12, 5, 1]}
-        />
-        <Lightformer
-          intensity={1.0}
-          form="rect"
-          position={[-7, 1.5, 0]}
-          rotation-y={Math.PI / 2}
-          scale={[12, 5, 1]}
-        />
-      </Environment>
-
-      {/* Shaping only — the environment above carries the base exposure. */}
+      {/* Shaping only — the environment carries the base exposure. */}
       <directionalLight position={[3, 6, 4]} intensity={0.8} />
       <directionalLight position={[-4, 3, -2]} intensity={0.45} />
       <directionalLight position={[-2, 4, -6]} intensity={0.3} color="#f3ca60" />
