@@ -1,7 +1,14 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { ContactShadows, Grid, Html, OrbitControls } from "@react-three/drei";
+import {
+  ContactShadows,
+  Environment,
+  Grid,
+  Html,
+  Lightformer,
+  OrbitControls,
+} from "@react-three/drei";
 import * as THREE from "three";
 import { ErrorBoundary } from "./ErrorBoundary.jsx";
 import { Model } from "./Model.jsx";
@@ -118,6 +125,71 @@ function CameraRig({ activeSpot, defaultFraming, controlsRef }) {
   });
 
   return null;
+}
+
+// Lighting matched to the team site's own car viewer, which renders through
+// <model-viewer environment-image="neutral"> — image-based lighting, not a set
+// of lamps. That distinction is the whole reason a directional rig couldn't
+// reproduce it: an IBL environment lights every surface from every direction
+// at once, so a car reads evenly wherever you orbit, while stacking
+// directionals always leaves a lit side and a falling-away side.
+//
+// The environment is built here out of emissive panels rather than loaded from
+// an HDRI, so there's no CDN fetch — the kiosk keeps working on a dead venue
+// network, and there's no multi-megabyte texture in the first paint. `frames={1}`
+// bakes it once instead of re-rendering the cube map every frame.
+//
+// The directionals that remain only shape highlights on top of that base. One
+// environment serves both cars: an earlier attempt tuned lamps per model to
+// stop the black livery going flat, but that was compensating for the wrong
+// thing — with IBL doing the work, neither car needs its own rig.
+function StudioLights() {
+  return (
+    <>
+      <Environment resolution={256} frames={1}>
+        {/* Neutral studio box: broad soft source overhead, panels on all four
+            sides so nothing is left unlit. */}
+        <Lightformer
+          intensity={4}
+          form="rect"
+          position={[0, 6, 0]}
+          rotation-x={Math.PI / 2}
+          scale={[12, 12, 1]}
+        />
+        {/* Wall panels are deliberately dimmer than the ceiling. Matching them
+            lights every side but flattens the car — the blacks lift to grey
+            and the livery loses its snap. Keeping the key overhead preserves
+            falloff down the bodywork while still leaving no side unlit. */}
+        <Lightformer intensity={0.7} form="rect" position={[0, 1.5, 7]} scale={[12, 5, 1]} />
+        <Lightformer
+          intensity={0.7}
+          form="rect"
+          position={[0, 1.5, -7]}
+          rotation-y={Math.PI}
+          scale={[12, 5, 1]}
+        />
+        <Lightformer
+          intensity={0.55}
+          form="rect"
+          position={[7, 1.5, 0]}
+          rotation-y={-Math.PI / 2}
+          scale={[12, 5, 1]}
+        />
+        <Lightformer
+          intensity={0.55}
+          form="rect"
+          position={[-7, 1.5, 0]}
+          rotation-y={Math.PI / 2}
+          scale={[12, 5, 1]}
+        />
+      </Environment>
+
+      {/* Shaping only — the environment above carries the base exposure. */}
+      <directionalLight position={[3, 6, 4]} intensity={0.5} />
+      <directionalLight position={[-4, 3, -2]} intensity={0.3} />
+      <directionalLight position={[-2, 4, -6]} intensity={0.25} color="#f3ca60" />
+    </>
+  );
 }
 
 // Samples renderer stats for the settings panel's performance readout. Only
@@ -254,15 +326,7 @@ export function Scene({
       <color attach="background" args={["#0d0d16"]} />
       <fog attach="fog" args={["#0d0d16", 10, 20]} />
 
-      {/* Even, soft studio-style rig: bright ambient/hemisphere base fill plus
-          key/fill/top/rim directionals from every side, so the car reads
-          evenly lit like a product shot instead of one moody hero light. */}
-      <ambientLight intensity={0.8} />
-      <hemisphereLight args={["#eae6da", "#1a1a2e", 0.55]} />
-      <directionalLight position={[3, 6, 4]} intensity={1.0} />
-      <directionalLight position={[-4, 3, -2]} intensity={0.65} />
-      <directionalLight position={[0, 9, 0.5]} intensity={0.9} />
-      <directionalLight position={[-2, 4, -6]} intensity={0.5} color="#f3ca60" />
+      <StudioLights />
 
       <Suspense fallback={<ModelLoading />}>
         <ErrorBoundary fallback={<MissingModel model={model} />} resetKey={model.id}>
