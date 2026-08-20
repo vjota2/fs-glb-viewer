@@ -35,6 +35,12 @@ function applyMaterialOverrides(mesh, overrides) {
     const copy = material.clone();
     if (override.untextured) copy.map = null;
     if (override.color !== undefined) copy.color = new THREE.Color(override.color);
+    // metalness/roughness here are glTF's *factors*, multiplied against the
+    // material's maps where it has them. Lowering the metalness factor is the
+    // only lever on a model authored fully metallic — the roughness factor is
+    // already at its maximum, so clamping that does nothing.
+    if (override.metalness !== undefined) copy.metalness = override.metalness;
+    if (override.roughness !== undefined) copy.roughness = override.roughness;
     if (override.opacity !== undefined) {
       copy.transparent = true;
       copy.opacity = override.opacity;

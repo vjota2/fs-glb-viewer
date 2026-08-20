@@ -37,7 +37,19 @@ export const models = [
       // Bodywork in the team amber, so the demo car reads as part of the same
       // system as the monopost. The 34 body panels share this material and
       // nothing else uses it, so tyres, engine and interior keep their own.
-      { name: "vivace.skin.rally", color: "#fca503" },
+      //
+      // Every material on this GLB ships at metalness 1. Real car paint is a
+      // dielectric, and at full metalness the panels mirror the environment
+      // like chrome — the glassy look. Dropping the factor makes it read as
+      // paint. (The roughness factor is already 1, so it can't be clamped
+      // further; metalness is the only lever here.)
+      { name: "vivace.skin.rally", color: "#fca503", metalness: 0.05 },
+      // Rubber, shipped fully metallic with no map to temper it.
+      { name: "tire_01j", metalness: 0, roughness: 1 },
+      // Painted tube and plastics, likewise metallic for no good reason.
+      { name: "rollcage", metalness: 0.1 },
+      { name: "vivace_int_stripped", metalness: 0.1 },
+      { name: "vivace_grille2", metalness: 0.1 },
       // Every glass material ships as alphaMode OPAQUE, so the windows render
       // as solid black panels. Transparency alone still leaves them looking
       // heavily smoked, because the baked textures are near-black (mean RGB
