@@ -11,6 +11,17 @@
   --font-body: "Space Grotesk", sans-serif;
   --font-mono: "DM Mono", monospace;
   --font-display: "Barlow Condensed", sans-serif;
+
+  /* The page is served viewport-fit=cover so the 3D fills the screen edge to
+     edge, which also puts the corners under the tablet's system bars and any
+     notch. Chrome on Android reports its gesture/navigation bar here. Every
+     edge-anchored control adds the matching inset so nothing sits under
+     hardware it can't be tapped through. */
+  --edge: 18px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
 }
 
 * {
@@ -43,7 +54,12 @@ button {
 .app {
   position: relative;
   width: 100vw;
+  /* 100vh on mobile is the viewport with the browser UI *hidden*, so with a
+     toolbar on screen the box is taller than what you can actually see and
+     anything pinned to its bottom edge lands underneath. dvh tracks the real
+     visible height as that UI shows and hides; vh stays as the fallback. */
   height: 100vh;
+  height: 100dvh;
   background: radial-gradient(ellipse at 50% 30%, #1a1a2e 0%, #0d0d16 70%);
 }
 
@@ -62,7 +78,8 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 18px 22px;
+  padding: calc(18px + var(--safe-top)) calc(22px + var(--safe-right))
+    18px calc(22px + var(--safe-left));
   pointer-events: none;
   z-index: 10;
 }
@@ -105,7 +122,7 @@ button {
 
 .hud-hint {
   position: absolute;
-  bottom: 18px;
+  bottom: calc(var(--edge) + var(--safe-bottom));
   left: 50%;
   transform: translateX(-50%);
   font-family: var(--font-mono);
@@ -352,8 +369,9 @@ button {
 
 .model-switcher {
   position: absolute;
-  top: 84px;
-  left: 22px;
+  /* Sits below the HUD brand, so it follows the same top inset. */
+  top: calc(84px + var(--safe-top));
+  left: calc(22px + var(--safe-left));
   z-index: 15;
   display: flex;
   border: 1px solid var(--line);
@@ -413,7 +431,7 @@ button {
 .fullscreen-btn,
 .settings-btn {
   position: absolute;
-  bottom: 18px;
+  bottom: calc(var(--edge) + var(--safe-bottom));
   z-index: 20;
   /* 44px is the smallest reliably tappable target on a touch screen; this and
      the panel close button were sized for a mouse. */
@@ -431,18 +449,19 @@ button {
 }
 
 .settings-btn {
-  right: 18px;
+  right: calc(var(--edge) + var(--safe-right));
 }
 
 .fullscreen-btn {
-  left: 18px;
+  left: calc(var(--edge) + var(--safe-left));
   font-size: 18px;
 }
 
 .settings-panel {
   position: absolute;
-  bottom: 70px;
-  right: 18px;
+  /* Clears the gear button (44px tall) that opens it, plus the system bar. */
+  bottom: calc(70px + var(--safe-bottom));
+  right: calc(var(--edge) + var(--safe-right));
   z-index: 20;
   width: 240px;
   /* The performance rows make this tall enough to run off a short landscape
@@ -571,8 +590,8 @@ button {
 
 .debug-readout {
   position: absolute;
-  left: 18px;
-  bottom: 18px;
+  left: calc(var(--edge) + var(--safe-left));
+  bottom: calc(var(--edge) + var(--safe-bottom));
   z-index: 10;
   font-family: var(--font-mono);
   font-size: 11px;
