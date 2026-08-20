@@ -61,6 +61,7 @@ const components = {
     doc: "PY2026-INV-001",
     label: "INVERTERS",
     title: "Hybrid Inverters",
+    partModel: "/models/parts/hybrid-inverter.glb",
     summary:
       "Inverters driving the hybrid motors, converting the HCU's torque request into phase current at the motor windings.",
     specs: [
