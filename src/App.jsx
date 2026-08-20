@@ -4,6 +4,7 @@ import { HUD } from "./components/HUD.jsx";
 import { InfoPanel } from "./components/InfoPanel.jsx";
 import { LoadingScreen } from "./components/LoadingScreen.jsx";
 import { Settings } from "./components/Settings.jsx";
+import { FullscreenButton } from "./components/FullscreenButton.jsx";
 import { ModelSwitcher } from "./components/ModelSwitcher.jsx";
 import { models, DEFAULT_MODEL_ID } from "./data/models.js";
 import { DEFAULT_IDLE_ENABLED, DEFAULT_IDLE_SECONDS } from "./config.js";
@@ -123,6 +124,9 @@ export default function App() {
         onChangeIdleSeconds={setIdleSeconds}
         perf={perf}
       />
+      {/* Bottom-left is the debug readout's corner, and the browser chrome is
+          wanted while calibrating anyway — so this is production-only. */}
+      {!debug && <FullscreenButton />}
 
       {debug && (
         <div className="debug-readout">

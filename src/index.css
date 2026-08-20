@@ -410,10 +410,10 @@ button {
 
 /* ---------- Settings ---------- */
 
+.fullscreen-btn,
 .settings-btn {
   position: absolute;
   bottom: 18px;
-  right: 18px;
   z-index: 20;
   /* 44px is the smallest reliably tappable target on a touch screen; this and
      the panel close button were sized for a mouse. */
@@ -428,6 +428,15 @@ button {
   align-items: center;
   justify-content: center;
   pointer-events: auto;
+}
+
+.settings-btn {
+  right: 18px;
+}
+
+.fullscreen-btn {
+  left: 18px;
+  font-size: 18px;
 }
 
 .settings-panel {
