@@ -21,8 +21,9 @@ export function Model({ model, onClick, onMeasured }) {
         rotation: model.rotation,
         materials: model.materials,
         minRoughness: MIN_ROUGHNESS,
+        saturation: model.saturation,
       }),
-    [scene, model.length, model.rotation, model.materials]
+    [scene, model.length, model.rotation, model.materials, model.saturation]
   );
 
   useEffect(() => {

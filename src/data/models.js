@@ -14,6 +14,9 @@ export const models = [
     length: 2.834,
     width: 1.412,
     height: 1.7,
+    // The livery is baked into the textures fairly muted; a lift makes the
+    // yellow read at booth distance. 1 leaves it as authored.
+    saturation: 1.15,
     hotspots: monopostHotspots,
   },
   {

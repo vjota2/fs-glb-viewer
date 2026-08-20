@@ -48,6 +48,41 @@ function applyMaterialOverrides(mesh, overrides) {
   mesh.material = Array.isArray(mesh.material) ? patched : patched[0];
 }
 
+// Pushes a model's colour saturation up or down.
+//
+// There's no material property for this — `color` multiplies through the
+// texture, which tints rather than saturates, and tone mapping is global, so
+// it can't be done for one car only. Patching the shader is the contained
+// option: it lifts the albedo before lighting, so the paint gets more vivid
+// without the highlights going technicolour, and needs no post-processing
+// dependency in the render pipeline.
+function applySaturation(mesh, amount) {
+  const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+
+  const patched = materials.map((material) => {
+    if (!material || !("map" in material)) return material;
+
+    const copy = material.clone();
+    copy.onBeforeCompile = (shader) => {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        "#include <map_fragment>",
+        `#include <map_fragment>
+         {
+           float luma = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+           diffuseColor.rgb = mix(vec3(luma), diffuseColor.rgb, ${amount.toFixed(3)});
+         }`
+      );
+    };
+    // Without this three reuses one compiled program across materials that
+    // look identical to its cache, and the patch leaks onto the other car.
+    copy.customProgramCacheKey = () => `saturation-${amount}`;
+    copy.needsUpdate = true;
+    return copy;
+  });
+
+  mesh.material = Array.isArray(mesh.material) ? patched : patched[0];
+}
+
 // Raises any material smoother than `floor` up to it.
 //
 // Several materials on both cars ship at roughness 0.25–0.35. Under the old
@@ -80,7 +115,11 @@ function clampRoughness(mesh, floor) {
 // `rotation` is applied before measuring, so a model authored facing the
 // wrong way is measured (and scaled) in the orientation it'll actually be
 // shown in — the fit keys off the longest *horizontal* side.
-export function fitClone(scene, targetLength, { rotation, materials, minRoughness } = {}) {
+export function fitClone(
+  scene,
+  targetLength,
+  { rotation, materials, minRoughness, saturation } = {}
+) {
   const clone = scene.clone(true);
 
   clone.traverse((child) => {
@@ -88,6 +127,7 @@ export function fitClone(scene, targetLength, { rotation, materials, minRoughnes
       child.castShadow = true;
       child.receiveShadow = true;
       if (materials?.length) applyMaterialOverrides(child, materials);
+      if (saturation !== undefined) applySaturation(child, saturation);
       if (minRoughness !== undefined) clampRoughness(child, minRoughness);
     }
   });
