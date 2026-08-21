@@ -46,6 +46,25 @@ export function GearIcon({ size = 18 }) {
   );
 }
 
+// Touch target: a fingertip with two ripples spreading out of it. The ripples
+// are animated in CSS (see .touch-icon) — a static mark this small reads as
+// decoration, whereas the outward motion is what actually says "press here".
+export function TouchIcon({ size = 20 }) {
+  return (
+    <svg {...base} width={size} height={size} className="touch-icon">
+      <circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none" />
+      <path
+        className="touch-ripple r1"
+        d="M7.05 7.05a7 7 0 0 0 0 9.9M16.95 16.95a7 7 0 0 0 0-9.9"
+      />
+      <path
+        className="touch-ripple r2"
+        d="M4.6 4.6a10.5 10.5 0 0 0 0 14.8M19.4 19.4a10.5 10.5 0 0 0 0-14.8"
+      />
+    </svg>
+  );
+}
+
 export function CloseIcon({ size = 16 }) {
   return (
     <svg {...base} width={size} height={size}>

@@ -111,7 +111,7 @@ export default function App() {
         />
       </div>
 
-      <HUD />
+      <HUD idle={idleEnabled && idle} />
       <ModelSwitcher activeId={activeModelId} onSelect={selectModel} />
       <InfoPanel spot={activeSpot} onClose={() => setActiveId(null)} />
       <LoadingScreen />

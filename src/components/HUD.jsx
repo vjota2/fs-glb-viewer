@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { TEAM_NAME, APP_NAME, SEASON } from "../config.js";
+import { TouchIcon } from "./icons.jsx";
 
 function useClock() {
   const [now, setNow] = useState(new Date());
@@ -10,7 +11,7 @@ function useClock() {
   return now.toLocaleTimeString("en-GB", { hour12: false });
 }
 
-export function HUD() {
+export function HUD({ idle = false }) {
   const time = useClock();
 
   return (
@@ -28,7 +29,17 @@ export function HUD() {
           <span>{time}</span>
         </div>
       </div>
-      <div className="hud-hint">DRAG TO ORBIT · PINCH TO ZOOM · TAP A MARKER FOR DETAILS</div>
+      {/* Both live in the same bottom-centre slot, so they swap rather than
+          stack — a demo-mode prompt competing with the controls legend would
+          just be two lines of small type saying different things. */}
+      {idle ? (
+        <div className="idle-hint" role="status">
+          <TouchIcon />
+          <span>TOUCH TO EXPLORE</span>
+        </div>
+      ) : (
+        <div className="hud-hint">DRAG TO ORBIT · PINCH TO ZOOM · TAP A MARKER FOR DETAILS</div>
+      )}
     </>
   );
 }

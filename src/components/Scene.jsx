@@ -14,6 +14,11 @@ const FOV_DEG = 40;
 const VIEW_DIR = new THREE.Vector3(0.8, 0.35, 0.8).normalize();
 const ZOOM_DISTANCE = 1.0;
 
+// OrbitControls scales this so one unit is ~60s per orbit: 1.8 turns the car
+// in about 33 seconds. Fast enough that someone walking past the booth reads
+// it as moving rather than parked, slow enough to still look deliberate.
+const IDLE_ROTATE_SPEED = 1.8;
+
 // The model's declared dimensions are only the fallback used before its GLB
 // reports a measured size (or if it fails to load) — see Model.jsx.
 const fallbackFit = (model) => ({
@@ -381,7 +386,7 @@ export function Scene({
         maxPolarAngle={Math.PI / 2 - 0.02}
         target={initialFraming.target.toArray()}
         autoRotate={autoRotate && !activeSpot}
-        autoRotateSpeed={0.6}
+        autoRotateSpeed={IDLE_ROTATE_SPEED}
       />
     </Canvas>
   );
