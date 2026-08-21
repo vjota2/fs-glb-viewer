@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { CloseIcon, GearIcon } from "./icons.jsx";
 
 const MIN_IDLE_SECONDS = 5;
 const MAX_IDLE_SECONDS = 600;
@@ -77,7 +78,7 @@ export function Settings({
         onClick={() => onOpenChange(!open)}
         aria-label="Settings"
       >
-        ⚙
+        <GearIcon />
       </button>
 
       {open && (
@@ -89,7 +90,7 @@ export function Settings({
               onClick={() => onOpenChange(false)}
               aria-label="Close"
             >
-              ✕
+              <CloseIcon size={14} />
             </button>
           </div>
 

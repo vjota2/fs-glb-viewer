@@ -250,7 +250,9 @@ button {
   border: 1px solid var(--line);
   background: transparent;
   color: var(--ink);
-  font-size: 16px;
+  /* Icons are SVG, so there's no glyph to size — line-height only stops a
+     stray text node adding height and nudging the icon off centre. */
+  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -441,7 +443,10 @@ button {
   border: 1px solid var(--line);
   background: #00000090;
   color: var(--ink);
-  font-size: 16px;
+  /* Icons are SVG, so there's no glyph to size — line-height only stops a
+     stray text node adding height and nudging the icon off centre. */
+  line-height: 1;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -454,7 +459,6 @@ button {
 
 .fullscreen-btn {
   left: calc(var(--edge) + var(--safe-left));
-  font-size: 18px;
 }
 
 .settings-panel {
@@ -492,8 +496,11 @@ button {
   border: none;
   background: transparent;
   color: var(--ink-dim);
-  font-size: 13px;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 }
 
 .settings-row {

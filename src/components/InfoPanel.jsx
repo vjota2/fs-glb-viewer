@@ -1,4 +1,5 @@
 import { PartViewer } from "./PartViewer.jsx";
+import { CloseIcon } from "./icons.jsx";
 
 export function InfoPanel({ spot, onClose }) {
   const open = !!spot;
@@ -9,7 +10,7 @@ export function InfoPanel({ spot, onClose }) {
         <>
           <div className="info-panel-head">
             <button className="info-panel-close" onClick={onClose} aria-label="Close">
-              ✕
+              <CloseIcon />
             </button>
             <div className="info-panel-doc">DOC: {spot.doc} · REV: 1.0</div>
             <div className="info-panel-title">{spot.title}</div>

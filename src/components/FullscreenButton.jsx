@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { CollapseIcon, ExpandIcon } from "./icons.jsx";
 
 // Safari still ships the API prefixed, and an iPad is a likely kiosk device.
 const fullscreenElement = () =>
@@ -53,7 +54,7 @@ export function FullscreenButton() {
       aria-label={active ? "Exit fullscreen" : "Enter fullscreen"}
       title={active ? "Exit fullscreen" : "Enter fullscreen"}
     >
-      {active ? "⤡" : "⤢"}
+      {active ? <CollapseIcon /> : <ExpandIcon />}
     </button>
   );
 }
